@@ -1,5 +1,7 @@
 from textnode import *
+from fileutilities import *
 
-tn = TextNode("test", TextType.BOLD, "http://localhost:8888")
 
-print(tn)
+if __name__ == "__main__":
+    rootdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+    copy_static(rootdir)
