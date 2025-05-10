@@ -15,7 +15,7 @@ class TestHTMLNode(unittest.TestCase):
         node1 = HTMLNode("a", "Test", props=testpropdict)
         node2 = HTMLNode("h1", "Test", [node1])
         testnoderepr1 = "HTMLNode(\nTag: a\nValue: Test\nChildren:\nProperties:\n\thref: https://www.google.com\n\ttarget: _blank\n)"
-        testnoderepr2 = "HTMLNode(\nTag: h1\nValue: Test\nChildren:\n\ta\nProperties:\n)"
+        testnoderepr2 = f"HTMLNode(\nTag: h1\nValue: Test\nChildren:\n\ta | {testpropdict} | None\nProperties:\n)"
         self.assertEqual(node1.__repr__(), testnoderepr1)
         self.assertEqual(node2.__repr__(), testnoderepr2)
 

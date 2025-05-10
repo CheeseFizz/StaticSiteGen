@@ -18,7 +18,7 @@ class HTMLNode():
         childstr = "Children:\n"
         if self.children:
             for child in self.children:
-                childstr += f"\t{child.tag}\n"
+                childstr += f"\t{child.tag} | {child.props} | {child.children}\n"
         propstr = "Properties:\n"
         if self.props:
             for prop in self.props:
