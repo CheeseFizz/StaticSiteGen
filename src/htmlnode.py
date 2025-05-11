@@ -18,7 +18,7 @@ class HTMLNode():
         childstr = "Children:\n"
         if self.children:
             for child in self.children:
-                childstr += f"\t{child.tag} | {child.props} | {child.children}\n"
+                childstr += f"\t{child.__repr__()}\n\n"
         propstr = "Properties:\n"
         if self.props:
             for prop in self.props:
@@ -26,7 +26,7 @@ class HTMLNode():
         tagstr = f"Tag: {self.tag}"
         valuestr = f"Value: {self.value}"
 
-        return f"HTMLNode(\n{tagstr}\n{valuestr}\n{childstr}{propstr})"
+        return f"HTMLNode(\n{tagstr}\n{valuestr}\n{childstr}\n{propstr})"
 
     def to_html(self):
         raise NotImplementedError

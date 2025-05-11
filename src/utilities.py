@@ -180,30 +180,43 @@ def tag_and_strip_block(block):
     match blocktype:
         case BlockType.CODE:
             return ("code", block[3:-3])
+
         case BlockType.HEADING:
             hnum = len(block) - len(block.lstrip("#"))
             return (f"h{str(hnum)}", block.lstrip("#").lstrip())
+
         case BlockType.PARAGRAPH:
             return ("p", block)
+
         case BlockType.ORDERED_LIST:
-            splits = block.split("\n")
-            new_splits = []
-            for split in splits:
-                chop = len(re.match(r"(\d+?\.\s)", split)[1])
-                new_splits.append(split[chop:])
-            return ("ol", "\n".join(new_splits))
+            return ("ol", block)
+
         case BlockType.UNORDERED_LIST:
-            splits = block.split("\n")
-            new_splits = []
-            for split in splits:
-                new_splits.append(split[2:])
-            return ("ul", "\n".join(new_splits))
+            return ("ul", block)
+
         case BlockType.QUOTE:
             splits = block.split("\n")
             new_splits = []
             for split in splits:
-                new_splits.append(split[1:])
-            return ("q", "\n".join(new_splits))
+                new_splits.append(split[2:])
+            return ("blockquote", "\n".join(new_splits))
+
+def list_item_to_html_node(block, block_type):
+    # might be better to redo other functions and structures to support this... but this works too.
+    nodes = []
+    if block_type == BlockType.UNORDERED_LIST:
+        splits = block.split("\n")
+        for split in splits:
+            nodes.append(ParentNode("li", list(map(text_node_to_html_node, text_to_textnodes(split[2:])))))
+    elif block_type == BlockType.ORDERED_LIST:
+        splits = block.split("\n")
+        for split in splits:
+            chop = len(re.match(r"(\d+?\.\s)", split)[1])
+            nodes.append(ParentNode("li", list(map(text_node_to_html_node, text_to_textnodes(split[chop:])))))
+    else:
+        raise ValueError(f"unexpected block_type: {block_type}")
+    return nodes
+
 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
@@ -211,9 +224,20 @@ def markdown_to_html_node(markdown):
     for block in blocks:
         tag, newblock = tag_and_strip_block(block)
         if tag == "code":
-            blocknodes.append(HTMLNode(tag, children=[text_node_to_html_node(TextNode(newblock, TextType.TEXT))]))
+            blocknodes.append(ParentNode(tag, children=[text_node_to_html_node(TextNode(newblock, TextType.TEXT))]))
+        elif tag == "ol":
+            blocknodes.append(ParentNode(tag, children=list_item_to_html_node(block, BlockType.ORDERED_LIST)))
+        elif tag == "ul":
+            blocknodes.append(ParentNode(tag, children=list_item_to_html_node(block, BlockType.UNORDERED_LIST)))
         else:
-            blocknodes.append(HTMLNode(tag, children=list(map(text_node_to_html_node, text_to_textnodes(newblock)))))
-    return HTMLNode("div", children=blocknodes)
+            blocknodes.append(ParentNode(tag, children=list(map(text_node_to_html_node, text_to_textnodes(newblock)))))
+    return ParentNode("div", children=blocknodes)
 
+def extract_title(markdown):
+    #feels a bit redundant to tag_and_strip_block?
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if re.match(r"^#\s", block):
+            return block[2:].strip()
+    raise ValueError("No h1 found")
 

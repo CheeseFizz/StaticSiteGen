@@ -352,10 +352,15 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             "div",
             children=[
                 HTMLNode("h2", children=[
-                    LeafNode(None, "This is a list:")
+                    HTMLNode(None, "This is a list:")
                 ]),
                 HTMLNode("ul", children=[
-                    LeafNode(None, "one\ntwo")
+                    HTMLNode("li", children=[
+                        HTMLNode(None, "one")
+                    ]),
+                    HTMLNode("li", children=[
+                        HTMLNode(None, "two")
+                    ])
                 ])
             ]
         )
@@ -368,12 +373,37 @@ class TestMarkdownToHTMLNode(unittest.TestCase):
             "div",
             children=[
                 HTMLNode("h2", children=[
-                    LeafNode(None, "This is a list:")
+                    HTMLNode(None, "This is a list:")
                 ]),
                 HTMLNode("ol", children=[
-                    LeafNode(None, "one\ntwo")
+                    HTMLNode("li", children=[
+                        HTMLNode(None, "one")
+                    ]),
+                    HTMLNode("li", children=[
+                        HTMLNode(None, "two")
+                    ])
                 ])
             ]
         )
         self.assertEqual(html, expected)
 
+class TestExtractTitle(unittest.TestCase):
+    def test_h1_extract(self):
+        markdown = "# Test Title\n\n## Some other title\n\nSome basic text"
+        title = extract_title(markdown)
+        expected = "Test Title"
+        self.assertEqual(title, expected)
+
+    def test_h1_later(self):
+        markdown = "## Test Title\n\n# Some other title \n\nSome basic text"
+        title = extract_title(markdown)
+        expected = "Some other title"
+        self.assertEqual(title, expected)
+
+    def test_no_h1_found(self):
+        markdown = "## Test Title\n\n## Some other title\n\nSome basic text"
+        self.assertRaises(
+            ValueError,
+            extract_title,
+            markdown
+        )
